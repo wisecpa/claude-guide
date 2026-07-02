@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Slack 인증 완료</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Malgun Gothic', sans-serif; background: #f5f7fa; color: #222;
+         display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+  .card { background: #fff; border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.08);
+          padding: 40px 44px; max-width: 560px; width: 100%; text-align: center; }
+  .icon { font-size: 44px; margin-bottom: 14px; }
+  h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 10px; }
+  p { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 8px; }
+  .code-box { display: flex; gap: 8px; margin: 22px 0 14px; }
+  .code-box input { flex: 1; font-family: Consolas, monospace; font-size: 13px;
+                    padding: 12px 14px; border: 1.5px solid #cfd8e3; border-radius: 8px;
+                    background: #f8fafc; color: #1d3357; }
+  .code-box button { flex-shrink: 0; padding: 12px 22px; font-size: 14px; font-weight: 700;
+                     background: #1d3357; color: #fff; border: none; border-radius: 8px;
+                     cursor: pointer; font-family: inherit; }
+  .code-box button:hover { background: #2c4a7c; }
+  .hint { font-size: 12.5px; color: #999; }
+  .copied { color: #27ae60; font-weight: 700; font-size: 13px; height: 18px; margin-bottom: 6px; }
+  .error h1 { color: #c0392b; }
+  footer { margin-top: 26px; font-size: 11.5px; color: #bbb; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="icon">⏳</div>
+  <h1>확인 중...</h1>
+</div>
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var code = params.get('code');
+  var error = params.get('error');
+  var card = document.getElementById('card');
+
+  if (error) {
+    card.className = 'card error';
+    card.innerHTML =
+      '<div class="icon">❌</div>' +
+      '<h1>인증이 취소되었거나 실패했습니다</h1>' +
+      '<p>오류: <b>' + error.replace(/[<>&]/g, '') + '</b></p>' +
+      '<p>설치 창으로 돌아가 다시 시도해 주세요. (브라우저에서 "허용"을 눌러야 합니다)</p>' +
+      '<footer>세무회계 현지 · Slack 파일 업로드 MCP</footer>';
+    return;
+  }
+  if (!code) {
+    card.innerHTML =
+      '<div class="icon">🔒</div>' +
+      '<h1>Slack 인증 대기 페이지</h1>' +
+      '<p>이 페이지는 Slack 파일 업로드 MCP 설치 과정에서 자동으로 열립니다.</p>' +
+      '<p>직접 방문할 필요는 없습니다. 설치는 공유폴더의 <b>setup.bat</b>으로 시작하세요.</p>' +
+      '<footer>세무회계 현지 · Slack 파일 업로드 MCP</footer>';
+    return;
+  }
+  card.innerHTML =
+    '<div class="icon">✅</div>' +
+    '<h1>Slack 인증 성공!</h1>' +
+    '<p>아래 <b>인증 코드</b>를 복사해서 설치 창(검은 화면)에 붙여넣어 주세요.</p>' +
+    '<div class="code-box">' +
+    '  <input type="text" id="codeInput" readonly>' +
+    '  <button id="copyBtn">복사</button>' +
+    '</div>' +
+    '<div class="copied" id="copiedMsg"></div>' +
+    '<p class="hint">⚠️ 코드는 약 10분간만 유효하며 1회만 사용할 수 있습니다.<br>' +
+    '만료되면 설치 창에서 다시 시작해 주세요.</p>' +
+    '<footer>세무회계 현지 · Slack 파일 업로드 MCP</footer>';
+  document.getElementById('codeInput').value = code;
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var input = document.getElementById('codeInput');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    var done = function () {
+      document.getElementById('copiedMsg').textContent = '복사되었습니다! 설치 창에 붙여넣기(마우스 우클릭) 하세요.';
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(done, function () { document.execCommand('copy'); done(); });
+    } else {
+      document.execCommand('copy'); done();
+    }
+  });
+})();
+</script>
+</body>
+</html>
